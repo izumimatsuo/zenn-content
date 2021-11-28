@@ -1,0 +1,9 @@
+version: 1
+imports:
+rules:
+  - expected: Cookie
+  - expected: Linux
+  - expected: Vim
+  - expected: Alpine Linux
+  - expected: jQuery
+  - expected: iPad

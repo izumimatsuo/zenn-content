@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "textlint --cache 'articles/*.md'",
+    "fix": "textlint --cache 'articles/*.md' --fix"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,11 @@
   "homepage": "https://github.com/izumimatsuo/zenn-content#readme",
   "dependencies": {
     "zenn-cli": "^0.1.98"
+  },
+  "devDependencies": {
+    "textlint": "^12.0.2",
+    "textlint-rule-preset-ja-spacing": "^2.2.0",
+    "textlint-rule-preset-ja-technical-writing": "^7.0.0",
+    "textlint-rule-prh": "^5.3.0"
   }
 }
