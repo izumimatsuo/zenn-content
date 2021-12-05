@@ -7,3 +7,4 @@ rules:
   - expected: Alpine Linux
   - expected: jQuery
   - expected: iPad
+  - expected: Vagrant
