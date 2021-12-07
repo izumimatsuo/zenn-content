@@ -66,10 +66,10 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
 
   MAX_OF_SERVERS = (ENV["MAX_OF_SERVERS"] || 1).to_i
-  (0...MAX_OF_SERVERS).each do |i|
-    config.vm.define "host#{i+1}" do |host|
-      host.vm.hostname = "host#{i+1}"
-      host.vm.network "private_network", ip: "192.168.56.1#{i+1}"
+  (1..MAX_OF_SERVERS).each do |id|
+    config.vm.define "host#{id}" do |host|
+      host.vm.hostname = "host#{id}"
+      host.vm.network "private_network", ip: "192.168.56.#{10+id}"
     end
   end
 
