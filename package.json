@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "textlint --cache 'articles/*.md'",
-    "fix": "textlint --cache 'articles/*.md' --fix"
+    "fix": "textlint --cache 'articles/*.md' --fix",
+    "preview": "zenn preview"
   },
   "repository": {
     "type": "git",
