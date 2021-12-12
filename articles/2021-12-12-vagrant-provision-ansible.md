@@ -1,13 +1,13 @@
 ---
-title: "VagrantのAnsibleプロビジョニングでPlaybookを検証する"
+title: "VagrantのAnsibleプロビジョニングでPlaybookを柔軟に変更できるVagrantfileの書き方"
 emoji: "💻"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ['vagrant','ansible']
-published: false
+published: true
 ---
 こんにちは。
 
-Vagrantで仮想サーバーを構築するのに、Ansibleプロビジョニングをよく使います。その際、構築したい内容によってAnsible Playbookを変えたいことがあります。 でも、そのためにはいちいちVagrantfileを書き変える必要があって面倒です。
+Vagrantで仮想サーバーを構築するのに、Ansibleプロビジョニングをよく使います。その際、構築したい内容によってAnsible Playbookを変えたいことがあります。でも、そのためにはいちいちVagrantfileを書き変える必要があって面倒です。
 
 この記事では、VagrantのAnsibleプロビジョニングでPlaybookを柔軟に変更して仮想サーバーを構築できるVagrantfileの書き方について説明していきます。
 
@@ -32,9 +32,9 @@ https://qiita.com/OPySPGcLYpJE0Tc/items/3268aa09c16a25cded0f
 
 https://maku77.github.io/python/env/venv.html
 
-# VagrantのAnsibleプロビジョニングでPlaybookを柔軟に変更するVagrantfile
+# VagrantのAnsibleプロビジョニングでPlaybookを柔軟に変更できるVagrantfileの書き方
 
-使用するAnsible Playbookを環境変数にすることとで対応します。なお、元となるVagrantfileは、別の記事で説明した「[Vagrantで複数台の仮想サーバーを柔軟に起動できるVagrantfileの書き方](https://zenn.dev/izumimatsuo/articles/2021-12-05-vagrant-multi-servers)」のものを利用しています。
+使用するAnsible Playbookを環境変数に設定することとで対応します。なお、元となるVagrantfileは、別の記事で説明した「[Vagrantで複数台の仮想サーバーを柔軟に起動できるVagrantfileの書き方](https://zenn.dev/izumimatsuo/articles/2021-12-05-vagrant-multi-servers)」のものを利用しています。
 
 ``` ruby
 # -*- mode: ruby -*-
@@ -67,7 +67,7 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-環境変数``ANSIBLE_PLAYBOOK``にPlaybookファイル名を設定することで、``vagrant up``もしくは``vagrant provision``でAnsibleプロビジョニングを実行できます。
+環境変数``ANSIBLE_PLAYBOOK``にPlaybookファイル名を設定することで、``vagrant up``もしくは``vagrant provision``でAnsibleプロビジョニングを実行できます。（環境変数を設定しない場合、Ansibleプロビジョニングは実行されません）
 
 実際に、簡単なPlaybookを使ってAnsibleプロビショニングを実行してみます。
 
@@ -77,7 +77,8 @@ $ cat playbook.yml
 - name: setup virtual machine
   hosts: all
   tasks:
-    - debug: msg="{{ inventory_hostname }} has gateway {{ ansible_default_ipv4.gateway }}"
+    - debug:
+        var: ansible_eth1.ipv4.address
 ```
 
 環境変数を設定してVagrantで仮想サーバーの起動とAnsibleプロビジョニングを実行します。
@@ -107,10 +108,10 @@ ok: [host1]
 
 TASK [debug] *******************************************************************
 ok: [host2] => {
-    "msg": "host2 has gateway 10.0.2.2"
+    "ansible_eth1.ipv4.address": "192.168.56.12"
 }
 ok: [host1] => {
-    "msg": "host1 has gateway 10.0.2.2"
+    "ansible_eth1.ipv4.address": "192.168.56.11"
 }
 
 PLAY RECAP *********************************************************************
@@ -118,7 +119,7 @@ host1                      : ok=2    changed=0    unreachable=0    failed=0    s
 host2                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ```
 
-環境変数を再設定することで、Vagrantfileをいちいち編集しないでAnsible Playbookを変更して実行できるのは便利だと思います。
+環境変数を再設定するだけで、Vagrantfileをいちいち編集しないでもPlaybookを変更してAnsibleプロビジョニングを実行できるのは便利です。
 
 # まとめ
 
