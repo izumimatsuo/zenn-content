@@ -32,9 +32,9 @@ https://qiita.com/OPySPGcLYpJE0Tc/items/3268aa09c16a25cded0f
 
 https://maku77.github.io/python/env/venv.html
 
-# VagrantのAnsibleプロビジョニングでPlaybookを柔軟に変更できるVagrantfileの書き方
+# Ansibleプロビジョニングで使用するPlaybookを柔軟に変更できるVagrantfileを書く
 
-使用するAnsible Playbookを環境変数に設定することとで対応します。なお、元となるVagrantfileは、別の記事で説明した「[Vagrantで複数台の仮想サーバーを柔軟に起動できるVagrantfileの書き方](https://zenn.dev/izumimatsuo/articles/2021-12-05-vagrant-multi-servers)」のものを利用しています。
+次のようなVagrantfileを書いていきます。なお、元となるVagrantfileは、別の記事で説明した「[Vagrantで複数台の仮想サーバーを柔軟に起動できるVagrantfileの書き方](https://zenn.dev/izumimatsuo/articles/2021-12-05-vagrant-multi-servers)」のものを再利用しています。
 
 ``` ruby
 # -*- mode: ruby -*-
@@ -51,9 +51,7 @@ Vagrant.configure("2") do |config|
       host.vm.hostname = "host#{id}"
       host.vm.network "private_network", ip: "192.168.56.#{10+id}"
 
-      #
       # Ansible Provisioning
-      #
       if id == MAX_OF_SERVERS && ANSIBLE_PLAYBOOK
         host.vm.provision :ansible do |ansible|
           ansible.limit = "all"
@@ -67,7 +65,25 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-環境変数``ANSIBLE_PLAYBOOK``にPlaybookファイル名を設定することで、``vagrant up``もしくは``vagrant provision``でAnsibleプロビジョニングを実行できます。（環境変数を設定しない場合、Ansibleプロビジョニングは実行されません）
+次のように、環境変数``ANSIBLE_PLAYBOOK``でPlaybookファイル名を受けとるようにします。
+
+```ruby
+  ANSIBLE_PLAYBOOK = ENV["ANSIBLE_PLAYBOOK"]
+```
+
+また、``if id == MAX_OF_SERVERS``と``ansible.limit = "all"``で複数の仮想サーバーに対して一括でAnsibleプロビジョニングするようにしています。ちなみに、環境変数``ANSIBLE_PLAYBOOK``が設定されていない場合はプロビジョニングを実行しないようにしています。
+
+```ruby
+      # Ansible Provisioning
+      if id == MAX_OF_SERVERS && ANSIBLE_PLAYBOOK
+        host.vm.provision :ansible do |ansible|
+          ansible.limit = "all"
+          ansible.playbook = ANSIBLE_PLAYBOOK
+        end
+      end
+```
+
+# Ansibleプロビジョニングを実行してみる
 
 実際に、簡単なPlaybookを使ってAnsibleプロビショニングを実行してみます。
 
@@ -81,6 +97,15 @@ $ cat playbook.yml
         var: ansible_eth1.ipv4.address
 ```
 
+まず、Ansibleの実行環境を準備します。
+
+```
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+
+$ pip install ansible
+```
+
 環境変数を設定してVagrantで仮想サーバーの起動とAnsibleプロビジョニングを実行します。
 
 - 使用するAnsible Playbookは、playbook.yml
@@ -88,7 +113,6 @@ $ cat playbook.yml
 
 ```
 $ export ANSIBLE_PLAYBOOK='playbook.yml'
-
 $ export MAX_OF_SERVERS=2
 
 $ vagrant up
